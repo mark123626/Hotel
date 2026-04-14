@@ -43,10 +43,44 @@ def init_db():
         cur.executemany(
             "INSERT INTO rooms (room_number, room_type, price) VALUES (?, ?, ?)",
             [
-                ("101", "Standard", 150.0),
-                ("201", "Deluxe",   300.0),
-                ("301", "Suite",    500.0),
-            ]
+            ("101", "Standard", 150.0, "Available"),
+            ("102", "Standard", 150.0, "Available"),
+            ("201", "Deluxe", 300.0, "Available"),
+            ("202", "Deluxe", 300.0, "Available"),
+            ("301", "Suite", 500.0, "Available")
+        ]
         )
     conn.commit()
     return conn
+
+def main(page: ft.Page):
+    page.title = "Simple Hotel Manager"
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.window_width = 900
+    page.window_height = 700
+    
+    db_conn = init_db()
+    content_area = ft.Column(expand=True, scroll="auto")
+
+    def show_page(page_name):
+        content_area.controls.clear()
+        
+        if page_name == "Dashboard":
+            cur = db_conn.cursor()
+            cur.execute("SELECT status, COUNT(*) FROM rooms GROUP BY status")
+            stats = dict(cur.fetchall())
+            
+            content_area.controls.append(ft.Text("Hotel Overview", size=30, weight="bold"))
+            content_area.controls.append(
+                ft.Row([
+                    ft.Container(
+                        content=ft.Text(f"Available: {stats.get('Available', 0)}", color="white"),
+                        bgcolor="green", padding=20, border_radius=10
+                    ),
+                    ft.Container(
+                        content=ft.Text(f"Occupied: {stats.get('Occupied', 0)}", color="white"),
+                        bgcolor="red", padding=20, border_radius=10
+                    ),
+                ])
+            )
+        # (Remaining page logic will be in Part 3)
